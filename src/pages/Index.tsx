@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { CategoryCard } from "@/components/CategoryCard";
 import { DayCard } from "@/components/DayCard";
-import { ActivityInput } from "@/components/ActivityInput";
+import { PlacesList } from "@/components/PlacesList";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { EmailDialog } from "@/components/EmailDialog";
-import { Button } from "@/components/ui/button";
 import { Utensils, Music, Trophy, Goal, Coffee, Film, Dumbbell, ShoppingBag } from "lucide-react";
 
 const categories = [
@@ -19,6 +19,8 @@ const categories = [
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+const cities = ["Westfield, IN", "Noblesville, IN", "Carmel, IN", "Fishers, IN", "Sheridan, IN"];
+
 interface Activity {
   id: string;
   name: string;
@@ -30,6 +32,8 @@ const Index = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [currentDay, setCurrentDay] = useState("Monday");
+  const [selectedCity, setSelectedCity] = useState(cities[0]);
+  const [apiKey, setApiKey] = useState("");
 
   const toggleCategory = (categoryId: string) => {
     setSelectedCategories((prev) =>
@@ -109,16 +113,36 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Activity Input */}
-        {selectedCategories.length > 0 && (
+        {/* API Key Input */}
+        <section className="space-y-4">
+          <ApiKeyInput value={apiKey} onChange={setApiKey} />
+        </section>
+
+        {/* City and Day Selection */}
+        {apiKey && (
           <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-foreground">Add Activities</h2>
-              <div className="flex gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Select City</label>
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="w-full rounded-lg border-2 border-border bg-card px-4 py-2 text-sm font-medium"
+                >
+                  {cities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Select Day</label>
                 <select
                   value={currentDay}
                   onChange={(e) => setCurrentDay(e.target.value)}
-                  className="rounded-lg border-2 border-border bg-card px-4 py-2 text-sm font-medium"
+                  className="w-full rounded-lg border-2 border-border bg-card px-4 py-2 text-sm font-medium"
                 >
                   {daysOfWeek.map((day) => (
                     <option key={day} value={day}>
@@ -128,7 +152,21 @@ const Index = () => {
                 </select>
               </div>
             </div>
-            <ActivityInput onAdd={addActivity} />
+          </section>
+        )}
+
+        {/* Places List */}
+        {selectedCategories.length > 0 && apiKey && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-foreground">
+              Select Places for {currentDay}
+            </h2>
+            <PlacesList
+              categories={selectedCategories}
+              city={selectedCity}
+              apiKey={apiKey}
+              onSelectPlace={addActivity}
+            />
           </section>
         )}
 
